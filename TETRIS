@@ -1,0 +1,96 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Text;
+
+namespace Tetris
+{
+    class Tetris
+    {
+        class Piece
+        {
+            private int[] x = new int[4];
+            private int[] y = new int[4];
+            private char c;
+            private ConsoleColor color;
+            private int formIndex;
+            private int rotationCount;
+            public bool isFinal;
+
+            public Piece(int offset)
+            {
+                Random ranGen = new Random();
+                int currFormIndex = ranGen.Next(0, forms.GetLength(0));
+                this.c = (char)forms[currFormIndex, 8];
+                this.color = formColors[forms[currFormIndex, 9]];
+                for (int i = 0; i < 4; i++)
+                {
+                    this.x[i] = forms[currFormIndex, i] + offset;
+                    this.y[i] = forms[currFormIndex, i + 4] + 1;
+                }
+                this.isFinal = false;
+                this.formIndex = currFormIndex;
+                this.rotationCount = 0;
+            }
+
+            public void Rotate()
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    this.x[i] += rotation[this.formIndex, this.rotationCount % 4, i];
+                    this.y[i] += rotation[this.formIndex, this.rotationCount % 4, i + 4];
+                }
+                this.rotationCount++;
+            }
+
+            public void Move(ConsoleKeyInfo pressedKey)
+            {
+                if (pressedKey.Key == ConsoleKey.RightArrow)
+                {
+                    if (isPossible('R'))
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            this.x[i]++;
+                        }
+                    }
+                }
+                else if (pressedKey.Key == ConsoleKey.LeftArrow)
+                {
+                    if (isPossible('L'))
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            this.x[i]--;
+                        }
+                    }
+                }
+                else if (pressedKey.Key == ConsoleKey.R)
+                {
+                    if (isPossible('T'))
+                    {
+                        Rotate();
+                    }
+                }
+                else if (pressedKey.Key == ConsoleKey.DownArrow)
+                    while (!isStopped())
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            this.y[i]++;
+                        }
+                    }
+            }
+
+            private bool isStopped()
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    if (this.y[i] + 1 == field.GetLength(0) - 1 || field[this.y[i] + 1, this.x[i], 0] != 0)
+                    {
+                        this.isFinal = true;
+                        return true;
+                    }
+                }
+                return false;
+            }
